@@ -70,39 +70,87 @@ Este repositorio implementa un **pipeline completo de trading sistemático** par
 - Stop dinámico por activo: `Precio_entrada - ATR(14) * multiplicador`.
 - Cap de exposición: máximo 60% por activo.
 
-## Instalación
+## Manual paso a paso: instalación y ejecución
+
+### 0) Prerrequisitos
+
+- Sistema operativo recomendado: Linux/macOS (en Windows, usar WSL o PowerShell adaptando comandos).
+- Python 3.10+.
+- `pip` y `venv` habilitados.
+- Conexión a internet para descargar datos de mercado y dependencias.
+
+Verificación rápida:
+
+```bash
+python --version
+pip --version
+```
+
+### 1) Clonar el repositorio
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd Nueva-app-etf-momentum
+```
+
+> Si ya lo tienes descargado, entra directamente a la carpeta del proyecto.
+
+### 2) Crear y activar entorno virtual
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+```
+
+En Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3) Instalar dependencias
+
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## Ejecución principal
+### 4) (Opcional) Configurar variables de entorno para Telegram
+
+Si quieres recibir notificaciones automáticas de señal mensual, define:
+
+```bash
+export TELEGRAM_BOT_TOKEN="..."
+export TELEGRAM_CHAT_ID="..."
+```
+
+En Windows PowerShell:
+
+```powershell
+$env:TELEGRAM_BOT_TOKEN="..."
+$env:TELEGRAM_CHAT_ID="..."
+```
+
+### 5) Ejecutar el pipeline principal
 
 ```bash
 python main.py
 ```
 
-Esto ejecuta:
+Esta ejecución realiza, en orden:
 
 1. Descarga de datos históricos.
 2. Construcción de features.
-3. Entrenamiento rolling ML.
+3. Entrenamiento rolling del modelo ML.
 4. Optimización de hiperparámetros.
 5. Backtest final.
-6. Export de resultados a `outputs/`.
-7. Impresión de señal mensual ejemplo.
+6. Exportación de resultados en `outputs/`.
+7. Impresión de señal mensual de ejemplo.
 
-## Dashboard
+### 6) Revisar resultados
 
-```bash
-streamlit run dashboard.py
-```
-
-## Salidas generadas
-
-En `outputs/`:
+Al finalizar, revisa la carpeta `outputs/` con los artefactos principales:
 
 - `equity_curve.csv` (estrategia vs benchmark)
 - `metrics.csv` (CAGR, MaxDD, Sharpe, Vol, Sortino)
@@ -111,33 +159,47 @@ En `outputs/`:
 - `regime.csv`
 - `optimizer_leaderboard.csv`
 
-## Telegram
+### 7) Ejecutar el dashboard
 
-Definir variables de entorno:
-
-```bash
-export TELEGRAM_BOT_TOKEN="..."
-export TELEGRAM_CHAT_ID="..."
-```
-
-Luego activar notificaciones en `main.py` llamando:
-
-```python
-main(send_notifications=True)
-```
-
-## Automatización mensual (cron / VPS)
-
-Script preparado:
+Con el entorno virtual aún activo:
 
 ```bash
-scripts/run_monthly.sh
+streamlit run dashboard.py
+```
+
+Luego abre en tu navegador la URL local que muestra Streamlit (habitualmente `http://localhost:8501`).
+
+### 8) Ejecución mensual automatizada (cron / VPS)
+
+Ya existe un script preparado:
+
+```bash
+bash scripts/run_monthly.sh
 ```
 
 Ejemplo de cron (primer día de mes, 08:00 UTC):
 
 ```cron
 0 8 1 * * /ruta/al/repo/scripts/run_monthly.sh >> /ruta/al/repo/cron.log 2>&1
+```
+
+### 9) Solución rápida de problemas
+
+- **Error de dependencias**: ejecuta `pip install -r requirements.txt` otra vez con el entorno virtual activado.
+- **No se abre Streamlit**: verifica que el proceso siga corriendo y usa la URL que imprime en terminal.
+- **Sin notificaciones Telegram**: confirma token/chat_id válidos y que el bot tenga acceso al chat.
+- **Datos incompletos**: vuelve a lanzar `python main.py` cuando haya conectividad estable.
+
+## Ejecución rápida (resumen)
+
+Si ya conoces el flujo, estos son los comandos mínimos:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+streamlit run dashboard.py
 ```
 
 ## Ejemplo de señal mensual
