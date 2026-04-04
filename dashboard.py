@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -33,9 +34,13 @@ def run_dashboard(output_dir: str = "outputs") -> None:
     if missing_files:
         st.error(
             "No se encontraron todos los archivos necesarios en "
-            f"'{output_path}'. Ejecuta primero 'python main.py' para generar outputs/."
+            f"'{output_path}'. Ejecuta primero 'python .\\main.py' desde PowerShell para generar outputs/."
         )
         st.caption("Archivos faltantes: " + ", ".join(missing_files))
+        st.caption(
+            "Si tus archivos están en otra ruta, inicia el dashboard con: "
+            "`streamlit run dashboard.py -- --output-dir \"C:\\ruta\\a\\outputs\"`."
+        )
         st.stop()
 
     leaderboard = pd.read_csv(output_path / "optimizer_leaderboard.csv")
@@ -68,4 +73,7 @@ def run_dashboard(output_dir: str = "outputs") -> None:
 
 
 if __name__ == "__main__":
-    run_dashboard()
+    parser = argparse.ArgumentParser(description="Dashboard ETF Momentum + IA")
+    parser.add_argument("--output-dir", default="outputs", help="Ruta a la carpeta de outputs")
+    args = parser.parse_args()
+    run_dashboard(output_dir=args.output_dir)

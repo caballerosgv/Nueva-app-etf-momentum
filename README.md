@@ -70,18 +70,20 @@ Este repositorio implementa un **pipeline completo de trading sistemático** par
 - Stop dinámico por activo: `Precio_entrada - ATR(14) * multiplicador`.
 - Cap de exposición: máximo 60% por activo.
 
-## Instalación
+## Instalación (PowerShell)
 
-```bash
+```powershell
 python -m venv .venv
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
+> Si también trabajas en Linux/macOS, puedes usar `source .venv/bin/activate`.
+
 ## Ejecución principal
 
-```bash
-python main.py
+```powershell
+python .\main.py
 ```
 
 Esto ejecuta:
@@ -96,8 +98,14 @@ Esto ejecuta:
 
 ## Dashboard
 
-```bash
-streamlit run dashboard.py
+```powershell
+streamlit run .\dashboard.py
+```
+
+Si los archivos de salida están en otra ruta:
+
+```powershell
+streamlit run .\dashboard.py -- --output-dir "C:\ruta\a\outputs"
 ```
 
 ## Salidas generadas
@@ -128,10 +136,14 @@ main(send_notifications=True)
 
 ## Automatización mensual (cron / VPS)
 
-Script preparado:
+Scripts preparados:
 
 ```bash
 scripts/run_monthly.sh
+```
+
+```powershell
+.\scripts\run_monthly.ps1
 ```
 
 Ejemplo de cron (primer día de mes, 08:00 UTC):
