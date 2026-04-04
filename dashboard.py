@@ -17,8 +17,29 @@ REQUIRED_OUTPUTS = [
 
 
 def _resolve_output_dir(output_dir: str) -> Path:
-    candidates = [Path(output_dir), Path(__file__).resolve().parent / output_dir]
+    requested = Path(output_dir)
+    script_dir = Path(__file__).resolve().parent
+    cwd = Path.cwd()
+    candidates = [
+        requested,
+        cwd / requested,
+        script_dir / requested,
+    ]
+
+    if output_dir == "outputs":
+        candidates.extend(
+            [
+                Path("salidas"),
+                cwd / "salidas",
+                script_dir / "salidas",
+            ]
+        )
+
+    seen = set()
     for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
         if candidate.exists() and candidate.is_dir():
             return candidate
     return candidates[-1]
@@ -32,14 +53,24 @@ def run_dashboard(output_dir: str = "outputs") -> None:
     missing_files = [name for name in REQUIRED_OUTPUTS if not (output_path / name).exists()]
 
     if missing_files:
+        script_dir = Path(__file__).resolve().parent
         st.error(
             "No se encontraron todos los archivos necesarios en "
-            f"'{output_path}'. Ejecuta primero 'python .\\main.py' desde PowerShell para generar outputs/."
+            f"'{output_path}'. Ejecuta primero el backtest para generar los archivos de salida."
         )
         st.caption("Archivos faltantes: " + ", ".join(missing_files))
         st.caption(
-            "Si tus archivos están en otra ruta, inicia el dashboard con: "
-            "`streamlit run dashboard.py -- --output-dir \"C:\\ruta\\a\\outputs\"`."
+            "Desde PowerShell, usa (desde la carpeta del proyecto): "
+            "`python .\\main.py`."
+        )
+        st.caption(
+            "Si ejecutas desde otra carpeta: "
+            f"`python \"{script_dir / 'main.py'}\"`."
+        )
+        st.caption(
+            "Luego inicia el dashboard apuntando a la carpeta correcta: "
+            "`streamlit run dashboard.py -- --output-dir \"C:\\ruta\\a\\outputs\"` "
+            "o usa `salidas` si ese es el nombre de tu carpeta."
         )
         st.stop()
 
