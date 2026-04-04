@@ -1,18 +1,48 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
+
+
+REQUIRED_OUTPUTS = [
+    "optimizer_leaderboard.csv",
+    "metrics.csv",
+    "equity_curve.csv",
+    "weights.csv",
+    "regime.csv",
+]
+
+
+def _resolve_output_dir(output_dir: str) -> Path:
+    candidates = [Path(output_dir), Path(__file__).resolve().parent / output_dir]
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+    return candidates[-1]
 
 
 def run_dashboard(output_dir: str = "outputs") -> None:
     st.set_page_config(page_title="ETF Momentum IA", layout="wide")
     st.title("Dashboard ETF Momentum + IA")
 
-    leaderboard = pd.read_csv(f"{output_dir}/optimizer_leaderboard.csv")
-    metrics = pd.read_csv(f"{output_dir}/metrics.csv")
-    equity = pd.read_csv(f"{output_dir}/equity_curve.csv", parse_dates=["date"]).set_index("date")
-    weights = pd.read_csv(f"{output_dir}/weights.csv", parse_dates=["date"]).set_index("date")
-    regime = pd.read_csv(f"{output_dir}/regime.csv", parse_dates=["date"]).set_index("date")
+    output_path = _resolve_output_dir(output_dir)
+    missing_files = [name for name in REQUIRED_OUTPUTS if not (output_path / name).exists()]
+
+    if missing_files:
+        st.error(
+            "No se encontraron todos los archivos necesarios en "
+            f"'{output_path}'. Ejecuta primero 'python main.py' para generar outputs/."
+        )
+        st.caption("Archivos faltantes: " + ", ".join(missing_files))
+        st.stop()
+
+    leaderboard = pd.read_csv(output_path / "optimizer_leaderboard.csv")
+    metrics = pd.read_csv(output_path / "metrics.csv")
+    equity = pd.read_csv(output_path / "equity_curve.csv", parse_dates=["date"]).set_index("date")
+    weights = pd.read_csv(output_path / "weights.csv", parse_dates=["date"]).set_index("date")
+    regime = pd.read_csv(output_path / "regime.csv", parse_dates=["date"]).set_index("date")
 
     col1, col2 = st.columns(2)
     with col1:
